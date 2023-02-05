@@ -1,6 +1,7 @@
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, updateDoc, doc, deleteDoc, getDoc} from "firebase/firestore";
 import { db } from './firebase';
 
+let deletedEntry;
 // Functions for database mutations
 
 export const emptyEntry = {
@@ -25,9 +26,29 @@ export async function addEntry(entry) {
 }
 
 export async function updateEntry(entry) {
-   // TODO: Create Mutation to Edit Entry
+   await updateDoc(doc(db, "entries", entry.id), {
+      name: entry.name,
+      link: entry.link,
+      description: entry.description,
+      category: entry.category,
+   });
 }
 
+// TODO: Create Mutation to Delete Entry
 export async function deleteEntry(entry) {
-   // TODO: Create Mutation to Delete Entry
+   //assign the entry to a deletedEntry object
+   deletedEntry = entry;
+   await deleteDoc(doc(db, "entries", entry.id));
 }
+
+// Create Mutation to Undo a Deleted Entry
+export async function undoDelete() {
+   //Check if Deleted Entry Exists
+   if (!deletedEntry) {
+      return;
+   }
+   // Add Deleted Entry Back
+   await addDoc(collection(db, "entries"), deletedEntry);
+   deletedEntry = null;
+}
+
